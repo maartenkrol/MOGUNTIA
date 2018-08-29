@@ -1,0 +1,32 @@
+TITLE co_budget
+NAME co
+MOLMASS 28.0
+START_DATE 19920101
+END_DATE 19930301
+START_CONCENTRATION PREVIOUS
+ EMISSION FILE co_emissions.dat
+ EMISSION FILE co_emissions_bmb.dat
+EMISSION FILE co_emissions_ind.dat
+ EMISSION FILE co_emissions_rest.dat
+ EMISSION OH CH4 1900.0 2.95e-12 -1820.0     
+    emission k*oh*ch4 with ch4 = 1900 ppb and k = 2.95e-12*exp(-1820/T) 
+LIFE_TIME  -1   
+    no radiactive decay  
+CHEMISTRY OH 0.15e-12 0.0 PRESSURE 0.06     
+    reaction rate with OH = 0.15e-12*exp(0/T)*(1+0.06*(11-k)) with k the model layer (1-10)
+CONVECTION YES
+OUTPUT MONTHLY ZONAL_AVERAGE
+OUTPUT MONTHLY LATLON 1000HPA
+OUTPUT MONTHLY LATLON 200HPA
+STATION_OUTPUT 180
+STATION Alert(82N,62W)      82N      62W
+STATION Ascension(8S,14W)      8S   14W 
+STATION Barrow(71N,156W)      71N     156W    
+STATION Cape_Grim(40S,144E)     41S   144E   
+STATION Guam(13N,144E)      13N      144E
+STATION Tutuila(14S,170W)     14S    170W
+STATION South_Pole(90S,24W)     90S  24W
+STATION Syowa(69S,39E)      69S      39E
+STATION Tae-ahn(36N,126E) 36N 126E
+END
+

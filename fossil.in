@@ -1,0 +1,24 @@
+TITLE FOSSIL
+NAME CO2
+       note that emissions are mornally expressed in gram C (and not gram CO2)
+MOLMASS 12.0
+START_DATE 20000101
+END_DATE 20040101
+START_CONCENTRATION 360e3
+           this is given in ppb (=360 ppm)
+LIFE_TIME -1
+EMISSION DISTRIBUTION emission_dist_co2.dat 4 
+   2000 6738e3 
+   2001 6900e3
+   2002 6955e3 
+   2003 7289e3
+        the values are given in kt / yr
+STATION_OUTPUT MONTHLY
+STATION Mace_Head(53N,11W)   53N 11W
+STATION Oregon(45N,124W)     45N  124W
+STATION Barbados(13N,59W)    13N  59W
+STATION Samoa(14S,171W)     14S 171W
+STATION Tasmania(41S,145E)   41S  145E
+OUTPUT MONTHLY LATLON 1000HPA
+OUTPUT MONTHLY ZONAL_AVERAGE
+END

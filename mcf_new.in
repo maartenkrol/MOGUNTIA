@@ -1,0 +1,38 @@
+TITLE mcf_new
+NAME MCF
+MOLMASS 133.5
+START_DATE 19900101
+END_DATE 20090101
+START_CONCENTRATION 0.100 
+           this is ppb,  1 ppt = 1000 ppb.....select here a suitable concentration!
+LIFE_TIME -1
+EMISSION DISTRIBUTION mcf_dist.dat 19      (19 years of total emitted amounts in ktonnes per year follow:)
+   1990 714.7
+   1991 634.5
+   1992 593.2
+   1993 386.19
+   1994 286.29
+   1995 244.255
+   1996 107.81
+   1997 48.505
+   1998 34.755
+   1999 30.04
+   2000 26.475
+   2001 19.715
+   2002 16.585
+   2003 14.82
+   2004 14.1
+   2005 11.89
+   2006 9.52
+   2007 7.825
+   2008 6.5
+        the values are given in kt / yr
+CHEMISTRY OH 5.0e-12 -1550.0
+        5e-12 is a first guess! -1550. is the demperature dependence!
+STATION_OUTPUT MONTHLY
+STATION Mace_Head(53N,11W)   53N 11W
+STATION Oregon(45N,124W)     45N  124W
+STATION Barbados(13N,59W)    13N  59W
+STATION Samoa(14S,171W)     14S 171W
+STATION Tasmania(41S,145E)   41S  145E
+END
