@@ -237,7 +237,7 @@ class plot_moguntia_new:
                     if day < 1: day = 1
                     day = int(day)
                     ot.append(datetime(year,imnth,day,0,0,0))
-                    ov.append(xx[2])
+                    ov.append(float(xx[2]))
                 opl.close()
                 ax.plot(ot,ov,linestyle='dashed',label=ostat)            
         
