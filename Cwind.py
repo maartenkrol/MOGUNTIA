@@ -49,9 +49,9 @@ class Cwind:
             None
             
         imonth = month-1
-        itake = (lon+175)/10
-        jtake = 17-(lat+85)/10
-        ktake = 10 - pres/100
+        itake = int((lon+175)/10)
+        jtake = int(17-(lat+85)/10)
+        ktake = int(10 - pres/100)
         
         #  get the u wind in the center:
         un = (self.u[imonth,:,:,:]+np.roll(self.u[imonth,:,:,:],1,axis=2))*0.5
