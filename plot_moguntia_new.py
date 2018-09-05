@@ -239,7 +239,7 @@ class plot_moguntia_new:
                     ot.append(datetime(year,imnth,day,0,0,0))
                     ov.append(float(xx[2]))
                 opl.close()
-                ax.plot(ot,ov,linestyle='dashed',label=ostat)            
+                ax.plot(ot,ov,'o',label=ostat)            
         
         ax.set_ylabel(self.xlf.name + ' ('+self.conversion+')')
         ax.set_xlabel('Time')
