@@ -5,13 +5,13 @@ try:
     from ipywidgets import *
 except:
     from IPython.html.widgets import *
+import subprocess
 from IPython.display import display,clear_output
 from mpl_toolkits.basemap import Basemap
 matplotlib.rcParams.update({'font.size': 12})
 class plot_moguntia_new:
 
-    def __init__(self,xlf):
-        self.xlf = xlf
+    def __init__(self):
         self.automatic = True
         self.nlev = 10
         self.conv = 1.0
@@ -22,21 +22,34 @@ class plot_moguntia_new:
         self.tmin = datetime(1900,1,1,0,0,0)
         self.tmax = datetime(2020,1,1,0,0,0)
         self.stations = False
+        self.infiles = glob.glob('*.in')
+        self.infiles.sort()
+        self.name = 'DUMMY'
+        self.molmass = '28.5'
+#        interact_manual(self.Moguntia,inputfile = self.infiles)
+
 # to support python2.7 widgets, set up two types of windows:
 # 1. windows that allow selection of multiple files (SelectMultiple)
 #    select output file, select overplot file, select station
 # 2. widgets that can be passed through the interact call.
 #     grid (T/F), overplot (T/F), coneversion (ToggleButto
 #
-        if len(xlf.outputfiles) == 0:
-            print("==============================================================")
-            print("No outputfiles generated, bailing out")
-            print("Please add STATION and/or OUTPUT statements in your input file")
-            print("==============================================================")
-            sys.exit(1)
-            
+#        if len(self.outputfiles) == 0:
+#            print("==============================================================")
+#            print("No outputfiles generated, bailing out")
+#            print("Please add STATION and/or OUTPUT statements in your input file")
+#            print("==============================================================")
+#            sys.exit(1)
         options = []
-        for ii,filen in enumerate(xlf.outputfiles):
+        for ii,filen in enumerate(self.infiles):
+            options.append(filen)
+        self.Input = Dropdown(description="Inputfile",options=options)  
+        self.moguntia = ToggleButton(description="Run Model",value=False)
+
+
+        self.outputfiles = ['xxx']
+        options = []
+        for ii,filen in enumerate(self.outputfiles):
             filen = filen[:-1]
             options.append(filen)
         self.wof = SelectMultiple(description="Output",options=options)
@@ -71,12 +84,12 @@ class plot_moguntia_new:
 # also create the overplot window:
 
                 os.chdir('MEASUREMENTS')
-                oplotfiles = glob.glob(self.xlf.name.upper()+'_*')
+                oplotfiles = glob.glob(self.name.upper()+'_*')
                 oplotfiles.sort()
                 os.chdir('..')
                 self.wo = SelectMultiple(description='Measurement Stations',options=oplotfiles)
                 self.wo.width=200
-                self.wo.visible = False
+                self.wo.layout.visibility = 'hidden'
                 self.woplot=ToggleButton(Description='Overplot',value=False)
                 #display(self.wo)
 
@@ -88,11 +101,14 @@ class plot_moguntia_new:
             oplotfiles = ['no station']
             self.wo = SelectMultiple(description='',options=oplotfiles)
             self.wo.width=200
-            self.wo.visible = False
+            self.wo.layout.visibility = 'hidden'
             self.woplot=ToggleButton(Description='Overplot',value=False)
             
 # start the main interaction window:
-        wmain = interact(self.plot_file,out=self.wof,stat=self.wstat,op=self.wo, 
+        wmain = interact(self.plot_file,
+                                Input = self.Input,
+                                runm = self.moguntia,
+                                out=self.wof,stat=self.wstat,op=self.wo, 
                                 conversion=ToggleButtons(options=['mol/mol','ppm','ppb','ppt']), 
                                 overplot = self.woplot,
                                 grid = self.grid,
@@ -100,8 +116,30 @@ class plot_moguntia_new:
                                 doit = self.wdoit)
                         
 
+    def Moguntia(self,inputfile = 'test.in'):         
+        xfile = open(inputfile,'r')
+        outp = subprocess.check_output(['MODEL/MOGUNTIA'],stdin=xfile)
+        print(outp.decode("utf-8")) 
+        xfile.close()
+        xfile = open(inputfile,'r')
+        # now process the output:
+        lines = xfile.readlines()
+        for line in lines:
+            if line.startswith('TITLE'): self.title = line.split()[1]
+            if line.startswith('START_DATE'): self.start_date = line.split()[1]
+            if line.startswith('END_DATE'): self.end_date = line.split()[1]
+            if line.startswith('MOLMASS'): self.molmass = line.split()[1]
+            if line.startswith('NAME'): self.name = line.split()[1]
+        xfile.close()
+        xfile = open(os.path.join('OUTPUT',self.title+'files_written'))
+        lines = xfile.readlines()
+        lines.sort()
+        self.outputfiles = lines
+ 
         #   this is the main routine that will perform the plotting:
-    def plot_file(self,
+    def plot_file(self, 
+                  Input = Dropdown(),
+                  runm = ToggleButton,
                   out = SelectMultiple(),
                   stat = SelectMultiple(),
                   op = SelectMultiple(),
@@ -111,7 +149,55 @@ class plot_moguntia_new:
                   automatic = True,
                   doit = ToggleButton):
                 
-        self.wo.visible=overplot
+        # Check if you want to run the model:
+        if runm:
+            self.Moguntia(self.Input.value)
+            self.moguntia.value = False
+            # load the results in the widgets:
+            options = []
+            for ii,filen in enumerate(self.outputfiles):
+                filen = filen[:-1]
+                options.append(filen)
+                self.wof.options = options
+            for ioutput in options:
+                if (ioutput.endswith('stations')):
+                    self.wof.value = (ioutput,)
+                    self.stations = True
+                    ofile = open(os.path.join('OUTPUT',ioutput),'r')
+                    lines = ofile.readlines()
+                    ofile.close()
+                    self.nstat = int(lines[0].split()[0])
+                    self.navg  = int(lines[0].split()[1])
+                    self.station_names = []
+                    data = []
+                    for line in lines[self.nstat+1:]:
+                        y = [float(x) for x in line.split()]
+                        data.extend(y)
+                    data = array(data)
+                    self.xlen = shape(data)[0]
+                    self.nrec = int(self.xlen/self.nstat)
+                    self.data = data.reshape((self.nrec,self.nstat))
+                    for i in range(self.nstat):
+                        self.station_names.append(lines[i+1].split()[0])
+# only create widget if station output:
+                    self.wstat.options = self.station_names
+                    self.wstat.value = (self.station_names[0],)
+# also create the overplot window:
+
+                    os.chdir('MEASUREMENTS')
+                    oplotfiles = glob.glob(self.name.upper()+'_*')
+                    oplotfiles.sort()
+                    os.chdir('..')
+                    self.wo.options = oplotfiles
+
+
+
+        if overplot:
+            self.wo.layout.visibility = 'visible'
+        else:
+            self.wo.layout.visibility = 'hidden'
+
+
         self.grid = grid
         self.conversion=conversion
         if conversion=='mol/mol':
@@ -163,29 +249,29 @@ class plot_moguntia_new:
                 # conditional visibility:
         if (not za_out) and (not ll_out): 
             try:
-                self.wlev.visible=False
+                self.wlev.layout.visibility = 'hidden'
             except:
                 None
         else:
             try:
-                self.wlev.visible=True
+                self.wlev.layout.visibility= 'visible'
             except:
                 None
         if station_out: 
-            self.wstat.visible=True
-            self.woplot.visible=True
+            self.wstat.layout.visibility= 'visible'
+            self.woplot.layout.visibility= 'visible'
             try:
-                self.wtmin.visible=True
-                self.wtmax.visible=True
+                self.wtmin.layout.visibility = 'visible'
+                self.wtmax.layout.visibility = 'visible'
             except:
                 None
         else:
-            self.wstat.visible=False
-            self.wo.visible=False
-            self.woplot.visible=False
+            #self.wstat.layout.visibility= 'hidden'
+            self.woplot.layout.visibility= 'hidden'
+            self.wo.layout.visibility= 'hidden'
             try:
-                self.wtmin.visible=False
-                self.wtmax.visible=False
+                self.wtmin.layout.visibility = 'hidden'
+                self.wtmax.layout.visibility = 'hidden'
             except:
                 None
         if doit:
@@ -204,7 +290,7 @@ class plot_moguntia_new:
                      
     def plot_station(self):
         # set up time:
-        start_date = [int(self.xlf.start_date[0:4]),int(self.xlf.start_date[4:6]),int(self.xlf.start_date[6:8])]
+        start_date = [int(self.start_date[0:4]),int(self.start_date[4:6]),int(self.start_date[6:8])]
         xtime = self.navg*(arange(self.nrec)+0.5)/(12.0*360.0)+\
                 start_date[0]+(start_date[1]-1)/12.0+(start_date[2]-1)/360.0
         idate = []
@@ -219,7 +305,7 @@ class plot_moguntia_new:
         for istat,name in enumerate(self.station_names):
             if name in self.wstat.value:
                 ax.plot(idate,self.data[:,istat]*self.conv,label=name)
-        if self.wo.visible:
+        if self.wo.layout.visibility == 'visible':
             for ostat in self.wo.value:
                 opl = open(os.path.join('MEASUREMENTS',ostat),'r')
                 ov = []
@@ -241,7 +327,7 @@ class plot_moguntia_new:
                 opl.close()
                 ax.plot(ot,ov,'o',label=ostat)            
         
-        ax.set_ylabel(self.xlf.name + ' ('+self.conversion+')')
+        ax.set_ylabel(self.name + ' ('+self.conversion+')')
         ax.set_xlabel('Time')
         ax.legend(loc="best")
         ax.grid(self.grid)
@@ -303,7 +389,7 @@ class plot_moguntia_new:
         ax.set_xlabel('Latitude')
         ax.grid(self.grid)
         cbar = colorbar(mappable=ax1,orientation='horizontal')
-        cbar.set_label(self.xlf.name + ' ('+self.conversion+')')
+        cbar.set_label(self.name + ' ('+self.conversion+')')
         
         
     def plot_ll(self,ioutput):
@@ -354,5 +440,5 @@ class plot_moguntia_new:
                 ax1 = xmap.contourf(X,Y,pf,v)
                 ax.set_title('Concentration at '+height+' '+self.llname)
                 cbar = colorbar(mappable=ax1,orientation='horizontal')
-                cbar.set_label(self.xlf.name + ' ('+self.conversion+')')
+                cbar.set_label(self.name + ' ('+self.conversion+')')
        
