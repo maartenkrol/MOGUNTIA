@@ -137,7 +137,6 @@ class plot_moguntia_test:
 
     def Moguntia(self,b):
         inputfile = self.Input.value
-        print(inputfile)
         xfile = open(inputfile,'r')
         outp = subprocess.check_output(['MODEL/MOGUNTIA'],stdin=xfile)
         print(outp.decode("utf-8")) 
@@ -267,7 +266,6 @@ class plot_moguntia_test:
         for istat,name in enumerate(self.station_names):
             if name in self.wstat.value:
                 ax.plot(idate,self.data[:,istat]*self.conv,label=name)
-        print(self.wo.layout.visibility)
         if self.wo.layout.visibility == 'visible':
             for ostat in self.wo.value:
                 opl = open(os.path.join('MEASUREMENTS',ostat),'r')
