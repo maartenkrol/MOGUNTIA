@@ -27,7 +27,7 @@ EMISSION DISTRIBUTION mcf_dist.dat 19      (19 years of total emitted amounts in
    1992 593.2
    1993 386.1
         the values are given in kt / yr
-CHEMISTRY OH 5e-12 -1550.0
+CHEMISTRY OH 5.1e-12 -1550.0
         5e-12 is a first guess! -1550. is the demperature dependence!
 STATION_OUTPUT MONTHLY
 STATION Mace_Head(53N,11W)   53N 11W

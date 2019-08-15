@@ -30,21 +30,21 @@ class Cwind:
         
     def plot_wind(self,action=ToggleButtons(),month=0,lon=0,lat=0,pres=0):
         if action=='zonal-aver':
-            self.lat_slider.visible=False
-            self.lon_slider.visible=False
-            self.pres_slider.visible=False
+            self.lat_slider.layout.visibility = "hidden"
+            self.lon_slider.layout.visibility = "hidden"
+            self.pres_slider.layout.visibility = "hidden"
         elif action == 'lon-pres':
-            self.lat_slider.visible=True
-            self.lon_slider.visible=False
-            self.pres_slider.visible=False
+            self.lat_slider.layout.visibility = "visible"
+            self.lon_slider.layout.visibility = "hidden"
+            self.pres_slider.layout.visibility = "hidden"
         elif action == 'lat-pres':
-            self.lat_slider.visible=False
-            self.lon_slider.visible=True
-            self.pres_slider.visible=False
+            self.lat_slider.layout.visibility = "hidden"
+            self.lon_slider.layout.visibility = "visible"
+            self.pres_slider.layout.visibility = "hidden"
         elif action == 'lat-lon':
-            self.lat_slider.visible=False
-            self.lon_slider.visible=False
-            self.pres_slider.visible=True
+            self.lat_slider.layout.visibility = "hidden"
+            self.lon_slider.layout.visibility = "hidden"
+            self.pres_slider.layout.visibility = "visible"
         else:
             None
             

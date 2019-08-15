@@ -2,13 +2,14 @@ TITLE co_budget
 NAME co
 MOLMASS 28.0
 START_DATE 19920101
-END_DATE 19930301
-START_CONCENTRATION PREVIOUS
- EMISSION FILE co_emissions.dat
- EMISSION FILE co_emissions_bmb.dat
-EMISSION FILE co_emissions_ind.dat
+END_DATE 19970101
+START_CONCENTRATION 30.0
+     # note that when a line starts with a space, it will be ignored
+ EMISSION FILE co_emissions.dat  
+EMISSION FILE co_emissions_bmb.dat
+ EMISSION FILE co_emissions_ind.dat
  EMISSION FILE co_emissions_rest.dat
- EMISSION OH CH4 1900.0 2.95e-12 -1820.0     
+ EMISSION OH CH4 1900.0 2.95e-12 -1820.0       
     emission k*oh*ch4 with ch4 = 1900 ppb and k = 2.95e-12*exp(-1820/T) 
 LIFE_TIME  -1   
     no radiactive decay  
@@ -17,7 +18,7 @@ CHEMISTRY OH 0.15e-12 0.0 PRESSURE 0.06
 CONVECTION YES
 OUTPUT MONTHLY ZONAL_AVERAGE
 OUTPUT MONTHLY LATLON 1000HPA
-OUTPUT MONTHLY LATLON 200HPA
+ OUTPUT MONTHLY LATLON 200HPA
 STATION_OUTPUT 180
 STATION Alert(82N,62W)      82N      62W
 STATION Ascension(8S,14W)      8S   14W 

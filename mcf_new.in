@@ -1,12 +1,27 @@
 TITLE mcf_new
 NAME MCF
 MOLMASS 133.5
-START_DATE 19900101
-END_DATE 20090101
-START_CONCENTRATION 0.100 
+START_DATE 19750101
+END_DATE 20190101
+START_CONCENTRATION 0.040 
            this is ppb,  1 ppt = 1000 ppb.....select here a suitable concentration!
 LIFE_TIME -1
-EMISSION DISTRIBUTION mcf_dist.dat 19      (19 years of total emitted amounts in ktonnes per year follow:)
+EMISSION DISTRIBUTION mcf_dist.dat 33      (33 years of total emitted amounts in ktonnes per year follow:)
+   1975 305.11
+   1976 377.2
+   1977 455.78
+   1978 506.7 
+   1979 505.1 
+   1980 532.5
+   1981 544.8
+   1982 520.3
+   1983 533.5
+   1984 582.1
+   1985 590.9 
+   1986 600.3
+   1987 621.1
+   1988 663.3
+   1989 687.9
    1990 714.7
    1991 634.5
    1992 593.2
@@ -27,7 +42,7 @@ EMISSION DISTRIBUTION mcf_dist.dat 19      (19 years of total emitted amounts in
    2007 7.825
    2008 6.5
         the values are given in kt / yr
-CHEMISTRY OH 5.0e-12 -1550.0
+CHEMISTRY OH 5.1e-12 -1550.0
         5e-12 is a first guess! -1550. is the demperature dependence!
 STATION_OUTPUT MONTHLY
 STATION Mace_Head(53N,11W)   53N 11W
