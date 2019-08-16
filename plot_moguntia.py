@@ -9,7 +9,7 @@ import subprocess
 from IPython.display import display,clear_output
 from mpl_toolkits.basemap import Basemap
 matplotlib.rcParams.update({'font.size': 12})
-class plot_moguntia_test:
+class plot_moguntia:
 
     def __init__(self):
         self.nlev = 10
@@ -24,6 +24,9 @@ class plot_moguntia_test:
         self.infiles.sort()
         self.name = 'DUMMY'
         self.molmass = '28.5'
+        self.station_out = False
+        self.ll_out = False
+        self.za_out = False
 #        interact_manual(self.Moguntia,inputfile = self.infiles)
 
 # to support python2.7 widgets, set up two types of windows:
@@ -87,7 +90,7 @@ class plot_moguntia_test:
             )
 
         form_items = [
-            Box([self.Input, self.moguntia, self.woplot], layout = form_item_layout),
+            Box([self.Input, self.moguntia, self.wdoit , self.woplot], layout = form_item_layout),
             Box([self.wof,self.wstat,self.wo], layout = form_item_layout),
             Box([Label(value='conversion'), ToggleButtons(options=['mol/mol','ppm','ppb','ppt'])], layout = form_item_layout),
             Box([Label(value='# levels'), self.wlev, self.grid,self.automatic], layout=form_item_layout),
@@ -110,6 +113,17 @@ class plot_moguntia_test:
         
     def set_visibility(self):
         
+        self.station_out = False
+        self.za_out = False
+        self.ll_out = False
+        for ioutput in self.wof.value:
+            if (ioutput.endswith('stations')):
+                self.station_out = True
+            elif (ioutput.find('za.') != -1):
+                self.za_out = True
+            elif (ioutput.find('ll.') != -1):
+                self.ll_out = True
+                
         self.wmax.value = self.xmax
         self.wmin.value = self.xmin
         tmin = self.convert_datetime(self.tmin)
@@ -124,11 +138,26 @@ class plot_moguntia_test:
                 self.form.children[4].children[j].layout.visibility = 'hidden'
                 self.form.children[5].children[j].layout.visibility = 'hidden'
         else:
-            self.form.children[3].children[0].layout.visibility = 'visible'
-            self.form.children[3].children[1].layout.visibility = 'visible'
+            if self.za_out or self.ll_out: 
+                vis = 'visible' 
+            else: 
+                vis = 'hidden' 
+            self.form.children[3].children[0].layout.visibility = vis
+            self.form.children[3].children[1].layout.visibility = vis
+            if self.station_out or self.za_out or self.ll_out:
+                vis = 'visible'
+            else:
+                vis = 'hidden'
             for j in range(3):
-                self.form.children[4].children[j].layout.visibility = 'visible'
-                self.form.children[5].children[j].layout.visibility = 'visible'
+                self.form.children[4].children[j].layout.visibility = vis
+            if self.station_out: 
+                vis = 'visible'
+            else: 
+                vis = 'hidden'
+            for j in range(3):
+                self.form.children[5].children[j].layout.visibility = vis
+                
+                    
             
         if self.woplot.value:
             self.wo.layout.visibility = 'visible'
@@ -198,7 +227,6 @@ class plot_moguntia_test:
         conversion = self.form.children[2].children[1].value
         self.conversion=conversion
         
-        self.get_levels(self.wtmin.value,self.wtmax.value)
         
         if conversion=='mol/mol':
             self.conv = 1.0          
@@ -208,33 +236,12 @@ class plot_moguntia_test:
             self.conv = 1e9
         elif conversion == 'ppt':
             self.conv = 1e12
-            
-        station_out = False 
-        za_out = False
-        ll_out = False
-        for ioutput in self.wof.value:
-            if (ioutput.endswith('stations')):
-                station_out = True
-            elif (ioutput.find('za.') != -1):
-                za_out = True
-            elif (ioutput.find('ll.') != -1):
-                ll_out = True
-        # conditional visibility:
-        #if (not za_out) and (not ll_out): 
-        #        self.wlev.layout.visibility = 'hidden'
-        #else:
-        #        self.wlev.layout.visibility= 'visible'
-        #if station_out: 
-        #    self.wstat.layout.visibility= 'visible'
-        #    self.woplot.layout.visibility= 'visible'
-        #    self.wtmin.layout.visibility = 'visible'
-        #    self.wtmax.layout.visibility = 'visible'
-        #else:
-        #    self.woplot.layout.visibility= 'hidden'
-        #    self.wo.layout.visibility= 'hidden'
-        #    self.wtmin.layout.visibility = 'hidden'
-        #    self.wtmax.layout.visibility = 'hidden'
+             
         if doit:
+            if self.automatic.value == False :   # read values from max/min
+                self.xmin = self.wmin.value
+                self.xmax = self.wmax.value
+                self.get_levels(self.wtmin.value,self.wtmax.value)
             for ioutput in self.wof.value:
                 if (ioutput.endswith('stations')):
                     self.plot_station()            
@@ -242,9 +249,9 @@ class plot_moguntia_test:
                     self.plot_za(ioutput)            
                 elif (ioutput.find('ll.') != -1):
                     self.plot_ll(ioutput)            
+            self.set_visibility() 
             self.wdoit.value=False
             
-        #self.set_visibility() 
         
     def get_levels(self, Tmin, Tmax):
         self.tmin = self.convert_partial_year(Tmin)
