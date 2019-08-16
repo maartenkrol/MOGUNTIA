@@ -38,7 +38,7 @@ class plot_moguntia_test:
 #            print("Please add STATION and/or OUTPUT statements in your input file")
 #            print("==============================================================")
 #            sys.exit(1)
-
+        self.wdoit = ToggleButton(description='Make Plots',value=False)
         options = []
         for ii,filen in enumerate(self.infiles):
             options.append(filen)
@@ -54,7 +54,8 @@ class plot_moguntia_test:
         self.wof = SelectMultiple(description="Output",options=options)
         self.wof.width=200
         self.wof.value=(options[0],)
-        self.wdoit = ToggleButton(description="Make Plots",value=False)
+        
+
 
         self.station_names = ['no station']
         self.wstat = SelectMultiple(description='',options=self.station_names)
@@ -70,7 +71,7 @@ class plot_moguntia_test:
         
         self.grid = Checkbox(True, description='grid')
         
-        self.wlev = IntSlider(min=5,max=30,value=self.nlev,description='nlev')
+        self.wlev = IntSlider(min=5,max=30,value=self.nlev)
         self.wmax = BoundedFloatText(value=self.xmax,max=10*self.xmax,min=self.xmin,description="Max")
         self.wmin = BoundedFloatText(value=self.xmin,max=self.xmax,min=0.0,description="Min")
         tmin = self.convert_datetime(self.tmin)
