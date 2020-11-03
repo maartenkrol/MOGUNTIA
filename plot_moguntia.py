@@ -7,11 +7,15 @@ except:
     from IPython.html.widgets import *
 import subprocess
 from IPython.display import display,clear_output
-from mpl_toolkits.basemap import Basemap
+#from mpl_toolkits.basemap import Basemap
+import cartopy
 matplotlib.rcParams.update({'font.size': 12})
 class plot_moguntia:
 
     def __init__(self):
+        #os.chdir('/home/lcur0000/JHL_notebooks/MAQ11306_P01_Moguntia/')
+        self.moguntiapath = os.path.join(os.getenv('HOME'),'JHL_notebooks/MAQ34806_P01_Moguntia')
+        os.chdir(self.moguntiapath)
         self.nlev = 10
         self.conv = 1.0
         self.overplot = False
@@ -181,7 +185,7 @@ class plot_moguntia:
             if line.startswith('MOLMASS'): self.molmass = line.split()[1]
             if line.startswith('NAME'): self.name = line.split()[1]
         xfile.close()
-        xfile = open(os.path.join('OUTPUT',self.title+'files_written'))
+        xfile = open(os.path.join(self.moguntiapath,'OUTPUT',self.title+'files_written'))
         lines = xfile.readlines()
         lines.sort()
         self.outputfiles = lines
@@ -194,7 +198,7 @@ class plot_moguntia:
             if (ioutput.endswith('stations')):
                 self.wof.value = (ioutput,)
                 self.stations = True
-                ofile = open(os.path.join('OUTPUT',ioutput),'r')
+                ofile = open(os.path.join(self.moguntiapath,'OUTPUT',ioutput),'r')
                 lines = ofile.readlines()
                 ofile.close()
                 self.nstat = int(lines[0].split()[0])
@@ -215,10 +219,10 @@ class plot_moguntia:
                 self.wstat.value = (self.station_names[0],)
 # also create the overplot window:
 
-                os.chdir('MEASUREMENTS')
+                os.chdir(os.path.join(self.moguntiapath,'MEASUREMENTS'))
                 oplotfiles = glob.glob(self.name.upper()+'_*')
                 oplotfiles.sort()
-                os.chdir('..')
+                os.chdir(self.moguntiapath)
                 self.wo.options = oplotfiles
         # Check if you want to run the model:
         
@@ -271,12 +275,15 @@ class plot_moguntia:
         f.autofmt_xdate()
         
         stat = self.wstat.value
+        COLORS=['r','g','b','m','c','k','y','r','g','b','m','c','k','y','r','g','b','m','c','k','y','r','g','b','m','c','k','y']
         for istat,name in enumerate(self.station_names):
             if name in self.wstat.value:
-                ax.plot(idate,self.data[:,istat]*self.conv,label=name)
+                ax.plot(idate,self.data[:,istat]*self.conv,label='MOD:'+name,color=COLORS[istat])
         if self.wo.layout.visibility == 'visible':
+            ioverstat = -1
             for ostat in self.wo.value:
-                opl = open(os.path.join('MEASUREMENTS',ostat),'r')
+                ioverstat += 1
+                opl = open(os.path.join(self.moguntiapath,'MEASUREMENTS',ostat),'r')
                 ov = []
                 ot = []
                 for line in opl.readlines():
@@ -294,7 +301,10 @@ class plot_moguntia:
                     ot.append(datetime(year,imnth,day,0,0,0))
                     ov.append(float(xx[2]))
                 opl.close()
-                ax.plot(ot,ov,'o',label=ostat)            
+                stationname = ostat
+                stationname = stationname.split('_')[1]
+                stationname ='OBS:'+ stationname.split('.')[0]
+                ax.plot(ot,ov,'o',label=stationname,color=COLORS[ioverstat],markersize=4)            
         
         ax.set_ylabel(self.name + ' ('+self.conversion+')')
         ax.set_xlabel('Time')
@@ -334,7 +344,7 @@ class plot_moguntia:
             self.nlev=10
         else:
             self.nlev=self.wlev.value
-        with open(os.path.join('OUTPUT',ioutput),'r') as ofile:
+        with open(os.path.join(self.moguntiapath,'OUTPUT',ioutput),'r') as ofile:
             lines = ofile.readlines()
             self.zafield = zeros((10,18))
             test = array([float(x) for x in lines[0].split()])
@@ -382,7 +392,8 @@ class plot_moguntia:
             v = self.xmin + arange(self.nlev)*(self.xmax-self.xmin)/(self.nlev-1)
         else:
             v = self.wmin.value + arange(self.nlev)*(self.wmax.value-self.wmin.value)/(self.nlev-1)
-        with open(os.path.join('OUTPUT',ioutput),'r') as ofile:
+
+        with open(os.path.join(self.moguntiapath,'OUTPUT',ioutput),'r') as ofile:
             lines = ofile.readlines()
             nll = int(lines[0])
             self.field = zeros((18,36,nll))
@@ -403,20 +414,41 @@ class plot_moguntia:
                 v = self.wmin.value + arange(self.nlev)*(self.wmax.value-self.wmin.value)/(self.nlev-1)
                 
             for il,level in enumerate(self.levels):
-                f,ax = subplots()
-                f.set_figheight(7)
-                f.set_figwidth(10)
+#               f,ax = subplots()
+#               f.set_figheight(7)
+#               f.set_figwidth(10)
                 height = '%5i hPa'%(1100-level*100)
-                pf = deepcopy(self.field[:,:,il])
-                pf = roll(pf,18,axis=1)
-                pf = pf[::-1,:]
-                xmap = Basemap(projection='cyl',llcrnrlat=-90.,urcrnrlat=90.,llcrnrlon=-180.,urcrnrlon=180.,resolution='c')
-                xmap.drawcoastlines(linewidth=0.5,color='0.25')
-                ax1 = xmap.contourf(X,Y,pf,v)
-                ax.set_title('Concentration at '+height+' '+self.llname)
-                cbar = colorbar(mappable=ax1,orientation='horizontal')
-                cbar.set_label(self.name + ' ('+self.conversion+')')
-       
+                pf   = deepcopy(self.field[:,:,il])
+                pf   = roll(pf,18,axis=1)
+                pf   = pf[::-1,:]
+
+# --- Cartopy
+                import matplotlib.ticker as mticker
+                from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+ 
+                fig1 = plt.figure(1,figsize=(16,9))
+                ax = fig1.add_subplot(111, projection=cartopy.crs.PlateCarree(),facecolor='w')
+                h  = ax.contourf(X,Y,pf,v)
+                ax.set_xlabel('logitude (deg E)')
+                ax.set_ylabel('latitude (deg N)')
+            
+                ax.add_feature(cartopy.feature.COASTLINE)
+                ax.gridlines(crs=cartopy.crs.PlateCarree(), linewidth=1, color='black', draw_labels=True, alpha=0.5, linestyle='--')
+                ax.xlabels_top  = False
+                ax.ylabels_left = False
+                ax.ylabels_right=True
+                ax.xlines       = True
+                ax.xlocator     = mticker.FixedLocator([-160, -140, -120, 120, 140, 160, 180,])
+                ax.xformatter   = LONGITUDE_FORMATTER
+                ax.yformatter   = LATITUDE_FORMATTER
+                ax.xlabel_style = {'size': 15, 'color': 'gray'}
+                ax.xlabel_style = {'color': 'red', 'weight': 'bold'}
+                t = ax.set_title('Concentration at '+height+' '+self.llname)
+                t.set_position((0.5,1.07))
+                cax = fig1.add_axes([ax.get_position().x1+0.05,ax.get_position().y0,0.02,ax.get_position().height])
+                cb = plt.colorbar(h,cax=cax)
+                cb.set_label(self.name + ' ('+self.conversion+')')
+                plt.show(fig1)                 # display the plot
 
 
 
