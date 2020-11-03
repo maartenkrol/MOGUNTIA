@@ -14,7 +14,7 @@ class plot_moguntia:
 
     def __init__(self):
         #os.chdir('/home/lcur0000/JHL_notebooks/MAQ11306_P01_Moguntia/')
-        self.moguntiapath = os.path.join(os.getenv('HOME'),'JHL_notebooks/MAQ34806_P01_Moguntia')
+        self.moguntiapath = os.path.join(os.getenv('HOME'),'work','MOGUNTIA')
         os.chdir(self.moguntiapath)
         self.nlev = 10
         self.conv = 1.0
